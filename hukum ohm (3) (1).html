@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Media pembelajaran interaktif Hukum Ohm untuk SMA — simulasi virtual, percobaan, game, dan latihan soal berbasis Discovery Learning.">
+<title>Simulasi Interaktif Hukum Ohm</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #020917;
+    --bg-card: #080f1e;
+    --bg-panel: #0d1a2e;
+    --accent-blue: #00d4ff;
+    --accent-gold: #ffd700;
+    --accent-green: #00ff88;
+    --accent-red: #ff4d6d;
+    --accent-orange: #ff8c00;
+    --text-primary: #e8f4ff;
+    --text-muted: #6a8baa;
+    --border-glow: rgba(0,212,255,0.3);
+    --grid-line: rgba(0,212,255,0.07);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── GRID BACKGROUND ─── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ─── NAVIGATION ─── */
+  #nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: rgba(2,9,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-glow);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  #nav .logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 13px; font-weight: 700;
+    color: var(--accent-blue);
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px var(--accent-blue);
+  }
+  #nav-tabs {
+    display: flex; gap: 4px; overflow-x: auto;
+    scrollbar-width: none;
+  }
+  #nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    padding: 6px 12px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--text-muted); transition: all 0.25s;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { color: var(--accent-blue); background: rgba(0,212,255,0.08); }
+  .nav-tab.active {
+    color: var(--accent-blue); background: rgba(0,212,255,0.12);
+    border: 1px solid rgba(0,212,255,0.3);
+    text-shadow: 0 0 8px var(--accent-blue);
+  }
+  #page-indicator {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; color: var(--text-muted);
+    min-width: 70px; text-align: right;
+  }
+
+  /* ─── PAGES ─── */
+  .page { display: none; padding: 80px 24px 40px; min-height: 100vh; position: relative; z-index: 1; }
+  .page.active { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ─── NAVIGATION BUTTONS ─── */
+  .page-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 40px; padding-top: 24px;
+    border-top: 1px solid var(--border-glow);
+  }
+  .btn {
+    padding: 10px 24px; border-radius: 8px;
+    font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700;
+    letter-spacing: 1px; cursor: pointer; border: none;
+    transition: all 0.25s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #0066cc, #00d4ff);
+    color: #fff; box-shadow: 0 0 20px rgba(0,212,255,0.3);
+  }
+  .btn-primary:hover { box-shadow: 0 0 30px rgba(0,212,255,0.5); transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent; color: var(--accent-blue);
+    border: 1px solid rgba(0,212,255,0.4);
+  }
+  .btn-outline:hover { background: rgba(0,212,255,0.08); }
+
+  /* ─── CARDS & PANELS ─── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glow);
+    border-radius: 12px; padding: 24px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 10px; padding: 20px;
+  }
+
+  /* ─── TYPOGRAPHY ─── */
+  .page-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(20px, 4vw, 32px);
+    font-weight: 900; letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--accent-blue), #7dd3fc);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; color: var(--accent-blue);
+    letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 8px; opacity: 0.8;
+  }
+  h3 { font-family: 'Orbitron', monospace; font-size: 16px; color: var(--accent-blue); margin-bottom: 12px; }
+  p { line-height: 1.7; color: #b8d0e8; font-size: 15px; }
+
+  /* ════════════════════════════
+     PAGE 1 — SAMPUL
+  ════════════════════════════ */
+  #pg1 { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-top: 100px; }
+  .cover-icon {
+    width: 120px; height: 120px; margin: 0 auto 32px;
+    position: relative;
+  }
+  .cover-icon svg { width: 100%; height: 100%; filter: drop-shadow(0 0 20px var(--accent-blue)); }
+  .cover-ring {
+    position: absolute; inset: -8px; border-radius: 50%;
+    border: 2px solid rgba(0,212,255,0.3);
+    animation: spin 8s linear infinite;
+  }
+  .cover-ring::after {
+    content: ''; position: absolute; top: -4px; left: 50%;
+    width: 8px; height: 8px; background: var(--accent-blue);
+    border-radius: 50%; transform: translateX(-50%);
+    box-shadow: 0 0 12px var(--accent-blue);
+  }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .cover-subtitle {
+    font-size: 14px; color: var(--text-muted); letter-spacing: 3px;
+    text-transform: uppercase; margin: 8px 0 24px;
+  }
+  .cover-tagline {
+    max-width: 480px; margin: 0 auto 40px;
+    font-size: 15px; color: #7aa8c8; line-height: 1.8;
+  }
+  .cover-meta {
+    background: rgba(0,212,255,0.05);
+    border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 12px; padding: 20px 32px;
+    display: inline-block; text-align: left;
+  }
+  .cover-meta p { font-size: 13px; margin: 4px 0; color: #7aa8c8; }
+  .cover-meta strong { color: var(--accent-blue); }
+
+  /* ─── LAMP ANIMATION ─── */
+  .lamp-anim { display: flex; gap: 24px; justify-content: center; margin: 32px 0; }
+  .lamp-item { text-align: center; }
+  .lamp-bulb {
+    width: 40px; height: 52px; margin: 0 auto 8px;
+    position: relative;
+  }
+  .lamp-bulb svg { width: 100%; height: 100%; }
+  .lamp-label { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; }
+  .glow-1 { animation: glow1 2s ease-in-out infinite; }
+  .glow-2 { animation: glow2 2s ease-in-out infinite 0.5s; }
+  .glow-3 { animation: glow3 2s ease-in-out infinite 1s; }
+  @keyframes glow1 {
+    0%,100% { filter: drop-shadow(0 0 2px rgba(255,200,0,0.3)); }
+    50% { filter: drop-shadow(0 0 6px rgba(255,200,0,0.5)); }
+  }
+  @keyframes glow2 {
+    0%,100% { filter: drop-shadow(0 0 4px rgba(255,200,0,0.5)); }
+    50% { filter: drop-shadow(0 0 10px rgba(255,200,0,0.8)); }
+  }
+  @keyframes glow3 {
+    0%,100% { filter: drop-shadow(0 0 8px rgba(255,200,0,0.8)); }
+    50% { filter: drop-shadow(0 0 20px rgba(255,200,0,1)); }
+  }
+
+  /* ════════════════════════════
+     PAGE 2-3 — TUTORIAL
+  ════════════════════════════ */
+  .tutorial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 24px; }
+  .tutorial-item {
+    background: var(--bg-panel);
+    border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 10px; padding: 20px;
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .tutorial-icon {
+    width: 44px; height: 44px; flex-shrink: 0;
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.2);
+  }
+  .tutorial-item h4 { font-size: 14px; color: var(--accent-blue); margin-bottom: 6px; }
+  .tutorial-item p { font-size: 13px; }
+
+  /* ════════════════════════════
+     PAGE 4 — STIMULATION
+  ════════════════════════════ */
+  .stim-scene {
+    background: linear-gradient(180deg, #040e1e 0%, #081525 100%);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 16px; padding: 40px;
+    text-align: center; margin: 24px 0;
+    position: relative; overflow: hidden;
+  }
+  .stim-circuit {
+    display: flex; align-items: center; justify-content: center;
+    gap: 16px; margin: 24px 0; flex-wrap: wrap;
+  }
+  .wire { height: 3px; width: 48px; background: var(--accent-blue); position: relative; border-radius: 2px; }
+  .wire::after {
+    content: '▶'; position: absolute; right: -8px; top: 50%;
+    transform: translateY(-50%); font-size: 8px;
+    color: var(--accent-blue); animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  .battery-svg { filter: drop-shadow(0 0 8px #00d4ff); }
+  .resistor-box {
+    background: rgba(255,140,0,0.1); border: 2px solid var(--accent-orange);
+    border-radius: 6px; padding: 8px 16px;
+    font-family: 'Share Tech Mono', monospace; font-size: 13px;
+    color: var(--accent-orange);
+  }
+  .voltage-slider-wrap { margin: 16px auto; max-width: 320px; }
+  .voltage-slider-wrap label { font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 8px; }
+  input[type=range] {
+    width: 100%; -webkit-appearance: none;
+    height: 6px; border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent-blue) var(--pct, 50%), rgba(255,255,255,0.1) var(--pct, 50%));
+    outline: none; cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px;
+    border-radius: 50%; background: var(--accent-blue);
+    box-shadow: 0 0 10px var(--accent-blue); cursor: pointer;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 18px; height: 18px; border: none; border-radius: 50%;
+    background: var(--accent-blue); box-shadow: 0 0 10px var(--accent-blue); cursor: pointer;
+  }
+  input[type=range]::-moz-range-track {
+    height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1);
+  }
+
+  .btn-del {
+    padding: 4px 10px; border-radius: 6px; font-size: 11px;
+    background: rgba(255,77,109,0.1); border: 1px solid rgba(255,77,109,0.3);
+    color: var(--accent-red); cursor: pointer; transition: all 0.2s;
+  }
+  .btn-del:hover { background: rgba(255,77,109,0.2); }
+  .save-toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 2000;
+    background: rgba(0,255,136,0.15); border: 1px solid rgba(0,255,136,0.4);
+    color: var(--accent-green); padding: 10px 18px; border-radius: 8px;
+    font-size: 13px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .save-toast.show { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* ════════════════════════════
+     PAGE 5 — PROBLEM STATEMENT
+  ════════════════════════════ */
+  .problem-questions { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+  .problem-q {
+    background: var(--bg-panel);
+    border-left: 3px solid var(--accent-gold);
+    border-radius: 0 10px 10px 0; padding: 16px 20px;
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .problem-q .q-num {
+    width: 32px; height: 32px; flex-shrink: 0;
+    background: rgba(255,215,0,0.15); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', monospace; font-size: 13px;
+    color: var(--accent-gold); font-weight: 700;
+  }
+  .hypothesis-input {
+    width: 100%; background: rgba(0,212,255,0.04);
+    border: 1px solid rgba(0,212,255,0.2); border-radius: 8px;
+    padding: 12px 16px; color: var(--text-primary);
+    font-family: 'Exo 2', sans-serif; font-size: 14px;
+    resize: vertical; min-height: 80px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .hypothesis-input:focus { border-color: rgba(0,212,255,0.5); }
+
+  /* ════════════════════════════
+     PAGE 6 — DATA COLLECTION (SIMULATOR)
+  ════════════════════════════ */
+  .sim-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+  @media (max-width: 680px) { .sim-layout { grid-template-columns: 1fr; } }
+
+  .sim-control label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 1px; }
+  .sim-control { margin-bottom: 20px; }
+  .sim-display {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 28px; font-weight: 700;
+    color: var(--accent-green);
+    text-shadow: 0 0 20px var(--accent-green);
+    background: rgba(0,255,136,0.05);
+    border: 1px solid rgba(0,255,136,0.2);
+    border-radius: 8px; padding: 12px 20px;
+    text-align: center; margin-top: 8px;
+  }
+  .sim-display.volt { color: var(--accent-blue); text-shadow: 0 0 20px var(--accent-blue); background: rgba(0,212,255,0.05); border-color: rgba(0,212,255,0.2); }
+  .sim-display.res { color: var(--accent-orange); text-shadow: 0 0 20px var(--accent-orange); background: rgba(255,140,0,0.05); border-color: rgba(255,140,0,0.2); }
+
+  /* Circuit visual */
+  .circuit-visual {
+    background: #040d1a;
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 12px; padding: 20px;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 200px;
+  }
+  .circuit-visual canvas { max-width: 100%; }
+
+  .add-btn {
+    margin-top: 16px; width: 100%;
+    padding: 10px; border-radius: 8px;
+    background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,212,255,0.1));
+    border: 1px solid rgba(0,255,136,0.3);
+    color: var(--accent-green); font-family: 'Exo 2', sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: all 0.25s; letter-spacing: 1px;
+  }
+  .add-btn:hover { background: rgba(0,255,136,0.15); box-shadow: 0 0 16px rgba(0,255,136,0.2); }
+
+  /* ════════════════════════════
+     PAGE 7 — DATA TABLE
+  ════════════════════════════ */
+  .data-table-wrap { overflow-x: auto; margin-top: 20px; border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead tr { background: rgba(0,212,255,0.1); }
+  th {
+    padding: 12px 16px; text-align: center;
+    font-family: 'Orbitron', monospace; font-size: 11px;
+    color: var(--accent-blue); letter-spacing: 1px;
+    border-bottom: 1px solid rgba(0,212,255,0.3);
+  }
+  td {
+    padding: 10px 16px; text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-family: 'Share Tech Mono', monospace; font-size: 13px;
+    color: var(--text-primary);
+  }
+  tr:hover td { background: rgba(0,212,255,0.04); }
+  .analysis-box {
+    background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 10px; padding: 20px; margin-top: 20px;
+  }
+
+  /* ════════════════════════════
+     PAGE 8 — VERIFICATION
+  ════════════════════════════ */
+  .verify-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+  @media (max-width: 600px) { .verify-grid { grid-template-columns: 1fr; } }
+  .verify-card {
+    border-radius: 10px; padding: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .verify-card.observed { background: rgba(0,255,136,0.05); border-color: rgba(0,255,136,0.2); }
+  .verify-card.theory { background: rgba(0,212,255,0.05); border-color: rgba(0,212,255,0.2); }
+  .verify-card h4 { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .verify-card.observed h4 { color: var(--accent-green); }
+  .verify-card.theory h4 { color: var(--accent-blue); }
+  .formula-display {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 32px; color: var(--accent-blue);
+    text-align: center; padding: 20px;
+    text-shadow: 0 0 20px rgba(0,212,255,0.5);
+    background: rgba(0,212,255,0.05);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 10px; margin: 20px 0;
+  }
+
+  /* ════════════════════════════
+     PAGE 9 — GENERALIZATION
+  ════════════════════════════ */
+  .conclusion-form { margin-top: 20px; }
+  .conclusion-prompt {
+    background: rgba(255,215,0,0.05);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 10px; padding: 16px 20px;
+    margin-bottom: 12px; font-size: 14px; color: #d4b800;
+  }
+  .badge-earned {
+    display: none;
+    background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,140,0,0.1));
+    border: 1px solid var(--accent-gold);
+    border-radius: 12px; padding: 20px; text-align: center;
+    margin-top: 20px;
+  }
+  .badge-earned.show { display: block; animation: fadeIn 0.5s ease; }
+  .badge-earned .badge-icon { font-size: 48px; margin-bottom: 8px; }
+  .badge-earned h3 { color: var(--accent-gold); }
+
+  /* ════════════════════════════
+     PAGE 10-15 — MATERI POKOK
+  ════════════════════════════ */
+  .materi-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .mat-tab {
+    padding: 8px 16px; border-radius: 8px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    border: 1px solid rgba(0,212,255,0.2);
+    color: var(--text-muted); background: transparent;
+    transition: all 0.2s;
+  }
+  .mat-tab:hover { color: var(--accent-blue); border-color: rgba(0,212,255,0.4); }
+  .mat-tab.active { background: rgba(0,212,255,0.12); color: var(--accent-blue); border-color: rgba(0,212,255,0.4); }
+  .mat-content { display: none; }
+  .mat-content.active { display: block; animation: fadeIn 0.3s ease; }
+  .info-box {
+    background: rgba(0,212,255,0.05); border-left: 3px solid var(--accent-blue);
+    border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 12px 0;
+    font-size: 14px;
+  }
+  .formula-box {
+    background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.2);
+    border-radius: 8px; padding: 20px; text-align: center; margin: 16px 0;
+  }
+  .formula-box .big-formula {
+    font-family: 'Share Tech Mono', monospace; font-size: 36px;
+    color: var(--accent-green); text-shadow: 0 0 20px rgba(0,255,136,0.4);
+  }
+  .var-table { width: 100%; margin-top: 16px; font-size: 13px; }
+  .var-table td { padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .var-table td:first-child { color: var(--accent-blue); font-family: 'Share Tech Mono'; }
+
+  /* Chart */
+  .chart-wrap { background: #040d1a; border: 1px solid rgba(0,212,255,0.15); border-radius: 10px; padding: 16px; margin: 16px 0; }
+  canvas#viChart { max-width: 100%; }
+
+  /* Examples */
+  .example-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 16px; }
+  .example-card {
+    background: var(--bg-panel); border-radius: 10px; padding: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    text-align: center;
+  }
+  .example-card .icon { font-size: 32px; margin-bottom: 10px; }
+  .example-card h4 { font-size: 13px; color: var(--accent-blue); margin-bottom: 6px; }
+  .example-card p { font-size: 12px; }
+
+  /* ════════════════════════════
+     PAGE 16 — GAME SIMULASI
+  ════════════════════════════ */
+  .game-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+  }
+  .score-board {
+    display: flex; gap: 16px;
+  }
+  .score-item {
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 8px; padding: 8px 16px; text-align: center;
+  }
+  .score-item .val { font-family: 'Orbitron', monospace; font-size: 20px; color: var(--accent-blue); }
+  .score-item .lbl { font-size: 10px; color: var(--text-muted); letter-spacing: 1px; }
+  .game-circuit {
+    background: #040d1a; border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 12px; padding: 24px;
+    display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px;
+  }
+  .game-target {
+    background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 10px; padding: 16px; text-align: center; margin: 16px 0;
+  }
+  .game-target .target-val { font-family: 'Orbitron', monospace; font-size: 24px; color: var(--accent-gold); }
+  .game-feedback { padding: 14px 20px; border-radius: 10px; text-align: center; font-weight: 700; font-size: 15px; display: none; margin-top: 12px; }
+  .game-feedback.correct { display: block; background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--accent-green); }
+  .game-feedback.wrong { display: block; background: rgba(255,77,109,0.1); border: 1px solid rgba(255,77,109,0.3); color: var(--accent-red); }
+
+  /* ════════════════════════════
+     PAGE 17-19 — LATIHAN SOAL
+  ════════════════════════════ */
+  .quiz-progress { display: flex; gap: 6px; margin-bottom: 24px; }
+  .quiz-dot {
+    flex: 1; height: 4px; border-radius: 2px;
+    background: rgba(255,255,255,0.1);
+    transition: background 0.3s;
+  }
+  .quiz-dot.done { background: var(--accent-green); }
+  .quiz-dot.current { background: var(--accent-blue); }
+
+  .question-card {
+    background: var(--bg-card); border: 1px solid var(--border-glow);
+    border-radius: 12px; padding: 28px;
+  }
+  .question-text { font-size: 16px; color: var(--text-primary); line-height: 1.7; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; padding: 13px 18px;
+    cursor: pointer; font-size: 14px; transition: all 0.2s;
+    display: flex; gap: 12px; align-items: center;
+  }
+  .option:hover { border-color: rgba(0,212,255,0.3); background: rgba(0,212,255,0.05); }
+  .option.selected { border-color: var(--accent-blue); background: rgba(0,212,255,0.1); }
+  .option.correct { border-color: var(--accent-green); background: rgba(0,255,136,0.1); }
+  .option.wrong { border-color: var(--accent-red); background: rgba(255,77,109,0.1); }
+  .option-key {
+    width: 26px; height: 26px; flex-shrink: 0;
+    border-radius: 6px; background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', monospace; font-size: 11px; color: var(--accent-blue);
+  }
+  .calc-input {
+    width: 100%; background: rgba(0,212,255,0.04);
+    border: 1px solid rgba(0,212,255,0.2); border-radius: 8px;
+    padding: 12px 16px; color: var(--text-primary);
+    font-family: 'Share Tech Mono', monospace; font-size: 16px;
+    outline: none; text-align: center; transition: border-color 0.2s;
+  }
+  .calc-input:focus { border-color: rgba(0,212,255,0.5); }
+  .explanation {
+    background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 8px; padding: 14px 18px; margin-top: 14px;
+    font-size: 13px; color: #8ab8d0; display: none;
+  }
+  .explanation.show { display: block; animation: fadeIn 0.3s ease; }
+  .quiz-result {
+    display: none; text-align: center; padding: 40px;
+  }
+  .quiz-result.show { display: block; animation: fadeIn 0.4s ease; }
+  .result-score { font-family: 'Orbitron', monospace; font-size: 56px; color: var(--accent-blue); text-shadow: 0 0 30px var(--accent-blue); }
+
+  /* ════════════════════════════
+     PAGE 20 — DAFTAR PUSTAKA
+  ════════════════════════════ */
+  .ref-list { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+  .ref-item {
+    background: var(--bg-panel); border-radius: 10px; padding: 16px 20px;
+    border-left: 3px solid var(--accent-blue);
+    font-size: 14px; line-height: 1.7; color: #8ab8d0;
+  }
+  .ref-item strong { color: var(--text-primary); }
+
+  /* ─── UTILITY ─── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+  .tag {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .tag-blue { background: rgba(0,212,255,0.1); color: var(--accent-blue); border: 1px solid rgba(0,212,255,0.2); }
+  .tag-gold { background: rgba(255,215,0,0.1); color: var(--accent-gold); border: 1px solid rgba(255,215,0,0.2); }
+  .tag-green { background: rgba(0,255,136,0.1); color: var(--accent-green); border: 1px solid rgba(0,255,136,0.2); }
+
+  .content-wrap { max-width: 900px; margin: 0 auto; }
+
+  .step-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 20px; padding: 4px 12px 4px 4px;
+    margin-bottom: 16px;
+  }
+  .step-badge .step-num {
+    width: 24px; height: 24px; background: var(--accent-blue);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', monospace; font-size: 11px; color: #000; font-weight: 900;
+  }
+  .step-badge span { font-size: 12px; color: var(--accent-blue); letter-spacing: 1px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-deep); }
+  ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="save-toast" id="saveToast" role="status" aria-live="polite">Progress tersimpan</div>
+
+<!-- ══════════════════ NAVIGATION ══════════════════ -->
+<nav id="nav" aria-label="Navigasi utama">
+  <div class="logo">⚡ OHM'S LAB</div>
+  <div id="nav-tabs">
+    <button class="nav-tab active" onclick="goTo(0)">Sampul</button>
+    <button class="nav-tab" onclick="goTo(1)">Tutorial</button>
+    <button class="nav-tab" onclick="goTo(2)">Stimulasi</button>
+    <button class="nav-tab" onclick="goTo(3)">Masalah</button>
+    <button class="nav-tab" onclick="goTo(4)">Percobaan</button>
+    <button class="nav-tab" onclick="goTo(5)">Data</button>
+    <button class="nav-tab" onclick="goTo(6)">Verifikasi</button>
+    <button class="nav-tab" onclick="goTo(7)">Simpulan</button>
+    <button class="nav-tab" onclick="goTo(8)">Materi</button>
+    <button class="nav-tab" onclick="goTo(9)">Game</button>
+    <button class="nav-tab" onclick="goTo(10)">Latihan</button>
+    <button class="nav-tab" onclick="goTo(11)">Pustaka</button>
+  </div>
+  <div id="page-indicator">HAL 1/20</div>
+</nav>
+
+<!-- ══════════════════ PAGE 1: SAMPUL ══════════════════ -->
+<div class="page active" id="pg1">
+  <div class="content-wrap">
+    <div class="cover-icon">
+      <div class="cover-ring"></div>
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="36" fill="rgba(0,212,255,0.1)" stroke="#00d4ff" stroke-width="1.5"/>
+        <path d="M44 20 L32 42 L40 42 L36 60 L52 36 L42 36 Z" fill="#00d4ff" opacity="0.9"/>
+      </svg>
+    </div>
+
+    <div class="section-label">Media Pembelajaran Interaktif · Fisika SMA</div>
+    <div class="page-title">SIMULASI INTERAKTIF<br>HUKUM OHM</div>
+    <div class="cover-subtitle">Berbasis Discovery Learning</div>
+
+    <div class="lamp-anim">
+      <div class="lamp-item">
+        <div class="lamp-bulb glow-1">
+          <svg viewBox="0 0 40 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="20" cy="22" rx="14" ry="16" fill="rgba(255,200,0,0.2)" stroke="rgba(255,200,0,0.5)" stroke-width="1.5"/>
+            <rect x="14" y="36" width="12" height="4" rx="2" fill="rgba(255,200,0,0.4)"/>
+            <rect x="16" y="40" width="8" height="3" rx="1.5" fill="rgba(255,200,0,0.4)"/>
+            <text x="20" y="25" fill="rgba(255,200,0,0.6)" font-size="10" text-anchor="middle">✦</text>
+          </svg>
+        </div>
+        <div class="lamp-label">V = 1V</div>
+      </div>
+      <div class="lamp-item">
+        <div class="lamp-bulb glow-2">
+          <svg viewBox="0 0 40 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="20" cy="22" rx="14" ry="16" fill="rgba(255,200,0,0.45)" stroke="rgba(255,200,0,0.8)" stroke-width="1.5"/>
+            <rect x="14" y="36" width="12" height="4" rx="2" fill="rgba(255,200,0,0.6)"/>
+            <rect x="16" y="40" width="8" height="3" rx="1.5" fill="rgba(255,200,0,0.6)"/>
+            <text x="20" y="25" fill="rgba(255,200,0,0.9)" font-size="12" text-anchor="middle">✦</text>
+          </svg>
+        </div>
+        <div class="lamp-label">V = 3V</div>
+      </div>
+      <div class="lamp-item">
+        <div class="lamp-bulb glow-3">
+          <svg viewBox="0 0 40 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="20" cy="22" rx="14" ry="16" fill="rgba(255,230,0,0.75)" stroke="rgba(255,230,0,1)" stroke-width="1.5"/>
+            <rect x="14" y="36" width="12" height="4" rx="2" fill="rgba(255,230,0,0.8)"/>
+            <rect x="16" y="40" width="8" height="3" rx="1.5" fill="rgba(255,230,0,0.8)"/>
+            <text x="20" y="25" fill="white" font-size="14" text-anchor="middle">✦</text>
+          </svg>
+        </div>
+        <div class="lamp-label">V = 6V</div>
+      </div>
+    </div>
+
+    <p class="cover-tagline">Jelajahi hubungan antara tegangan, arus, dan hambatan listrik melalui simulasi virtual yang interaktif dan menyenangkan.</p>
+
+    <div class="cover-meta">
+      <p><strong>Mata Pelajaran:</strong> Fisika — Listrik Dinamis</p>
+      <p><strong>Kelas / Semester:</strong> X / Genap</p>
+      <p><strong>Model Pembelajaran:</strong> Discovery Learning</p>
+      <p><strong>Platform:</strong> Media Pembelajaran Interaktif</p>
+    </div>
+
+    <div class="page-nav">
+      <span></span>
+      <button class="btn btn-primary" onclick="goTo(1)">Mulai Belajar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE 2-3: TUTORIAL ══════════════════ -->
+<div class="page" id="pg2">
+  <div class="content-wrap">
+    <div class="section-label">Halaman 2–3</div>
+    <div class="page-title">PETUNJUK PENGGUNAAN</div>
+    <p>Baca petunjuk berikut sebelum mulai menggunakan media pembelajaran ini agar pengalaman belajarmu lebih optimal.</p>
+
+    <div class="tutorial-grid" style="margin-top:24px">
+      <div class="tutorial-item">
+        <div class="tutorial-icon">🧭</div>
+        <div>
+          <h4>Navigasi Halaman</h4>
+          <p>Gunakan tombol <strong style="color:var(--accent-blue)">← Sebelumnya</strong> dan <strong style="color:var(--accent-blue)">Selanjutnya →</strong> untuk berpindah antar halaman, atau klik tab menu di bagian atas layar.</p>
+        </div>
+      </div>
+      <div class="tutorial-item">
+        <div class="tutorial-icon">⚡</div>
+        <div>
+          <h4>Menjalankan Simulasi</h4>
+          <p>Pada halaman Percobaan Virtual, geser slider <strong style="color:var(--accent-blue)">Tegangan (V)</strong> dan <strong style="color:var(--accent-orange)">Hambatan (R)</strong> untuk melihat perubahan arus listrik secara real-time.</p>
+        </div>
+      </div>
+      <div class="tutorial-item">
+        <div class="tutorial-icon">📊</div>
+        <div>
+          <h4>Mencatat Data</h4>
+          <p>Klik tombol <strong style="color:var(--accent-green)">+ Tambah Data</strong> setelah mengatur nilai V dan R untuk menyimpan hasil percobaan ke dalam tabel pengamatan. Data tersimpan otomatis di peramban sehingga tidak hilang jika halaman ditutup (bisa dihapus per baris atau dikosongkan semua di halaman Data).</p>
+        </div>
+      </div>
+      <div class="tutorial-item">
+        <div class="tutorial-icon">🎮</div>
+        <div>
+          <h4>Game Simulasi</h4>
+          <p>Pada halaman Game, kamu akan diberi tantangan untuk menemukan nilai tegangan atau hambatan yang tepat agar arus mencapai target yang ditentukan.</p>
+        </div>
+      </div>
+      <div class="tutorial-item">
+        <div class="tutorial-icon">📝</div>
+        <div>
+          <h4>Latihan Soal</h4>
+          <p>Jawab soal pilihan ganda dan soal hitung. Klik jawaban yang kamu pilih, kemudian klik <strong style="color:var(--accent-blue)">Cek Jawaban</strong> untuk melihat hasilnya beserta penjelasan.</p>
+        </div>
+      </div>
+      <div class="tutorial-item">
+        <div class="tutorial-icon">📚</div>
+        <div>
+          <h4>Materi Pokok</h4>
+          <p>Halaman Materi berisi penjelasan lengkap dengan tab-tab topik. Klik tab untuk beralih antar topik: Arus Listrik, Tegangan, Hambatan, Bunyi Hukum Ohm, Grafik, dan Contoh.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:24px; background:rgba(255,215,0,0.05); border-color:rgba(255,215,0,0.2);">
+      <h3 style="color:var(--accent-gold)">💡 Tips Belajar</h3>
+      <p style="font-size:14px; color:#c0a000;">Ikuti urutan halaman dari awal — setiap tahap dirancang agar kamu bisa <em>menemukan sendiri</em> konsep Hukum Ohm. Jangan loncat langsung ke materi agar pengalaman Discovery Learning-mu lebih bermakna!</p>
+    </div>
+
+    <div class="page-nav">
+      <button class="btn btn-outline" onclick="goTo(0)">← Kembali</button>
+      <button class="btn btn-primary" onclick="goTo(2)">Selanjutnya →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE 4: STIMULATION ══════════════════ -->
+<div class="page" id="pg3">
+  <div class="content-wrap">
+    <div class="step-badge"><div class="step-num">1</div><span>STIMULATION · HAL 4</span></div>
+    <div class="page-title">FENOMENA LAMPU LISTRIK</div>
+    <p>Perhatikan animasi berikut dan amati apa yang terjadi ketika tegangan listrik diubah!</p>
+
+    <div class="stim-scene">
+      <div class="section-label" style="margin-bottom:16px">Rangkaian Listrik Sederhana</div>
+      <div class="stim-circuit">
+        <svg width="60" height="60" class="battery-svg">
+          <rect x="5" y="15" width="50" height="30" rx="6" fill="rgba(0,212,255,0.1)" stroke="#00d4ff" stroke-width="1.5"/>
+          <rect x="20" y="10" width="6" height="8" rx="2" fill="#00d4ff"/>
+          <rect x="34" y="12" width="4" height="6" rx="1" fill="#00d4ff" opacity="0.5"/>
+          <text x="30" y="34" fill="#00d4ff" font-size="11" text-anchor="middle" font-family="monospace">BAT</text>
+        </svg>
+        <div class="wire"></div>
+        <div class="resistor-box" id="stimRes">R = 10 Ω</div>
+        <div class="wire"></div>
+        <div id="stimBulb">
+          <svg viewBox="0 0 50 65" width="50" height="65">
+            <ellipse id="sbGlow" cx="25" cy="26" rx="17" ry="19" fill="rgba(255,200,0,0.3)" stroke="rgba(255,200,0,0.6)" stroke-width="2"/>
+            <rect x="18" y="43" width="14" height="5" rx="2.5" fill="rgba(255,200,0,0.4)"/>
+            <rect x="20" y="48" width="10" height="4" rx="2" fill="rgba(255,200,0,0.4)"/>
+            <text id="sbText" x="25" y="30" fill="rgba(255,200,0,0.8)" font-size="14" text-anchor="middle">✦</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="voltage-slider-wrap">
+        <label>Tegangan (V): <strong id="stimVLabel" style="color:var(--accent-blue)">6 V</strong></label>
+        <input type="range" id="stimSlider" min="1" max="12" value="6" oninput="updateStim(this.value)">
+      </div>
+      <div style="font-family:'Share Tech Mono',monospace; font-size:14px; color:var(--text-muted)">
+        Arus = <span id="stimI" style="color:var(--accent-green); font-size:18px">0.60</span> A
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px; border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.04)">
+      <div class="tag tag-gold">PERTANYAAN PEMANTIK</div>
+      <p style="font-size:15px; line-height:1.8; color:#d4b800;">Mengapa nyala lampu berubah ketika nilai tegangan diubah? <br>Faktor apa sajakah yang mempengaruhi <strong>besar arus listrik</strong> yang mengalir dalam suatu rangkaian?</p>
+      <textarea class="hypothesis-input" style="margin-top:16px" placeholder="Tuliskan pengamatanmu di sini..."></textarea>
+    </div>
+
+    <div class="page-nav">
+      <button class="btn btn-outline" onclick="goTo(1)">← Kembali</button>
+      <button class="btn btn-primary" onclick="goTo(3)">Selanjutnya →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE 5: PROBLEM STATEMENT ══════════════════ -->
+<div class="page" id="pg4">
+  <div class="content-wrap">
+    <div class="step-badge"><div class="step-num">2</div><span>PROBLEM STATEMENT · HAL 5</span></div>
+    <div class="page-title">IDENTIFIKASI MASALAH</div>
+    <p>Berdasarkan fenomena yang kamu amati, identifikasi masalah-masalah berikut untuk memandu penyelidikanmu.</p>
+
+    <div class="problem-questions">
+      <div class="problem-q">
+        <div class="q-num">1</div>
+        <div style="flex:1">
+          <p style="color:var(--text-primary); font-size:14px; margin-bottom:10px">Bagaimana <strong style="color:var(--accent-blue)">hubungan antara tegangan (V) dan arus listrik (I)</strong> dalam suatu rangkaian listrik, jika hambatan dijaga konstan?</p>
+          <textarea class="hypothesis-input" placeholder="Hipotesismu: Jika tegangan diperbesar, maka arus listrik akan..."></textarea>
+        </div>
+      </div>
+      <div class="problem-q">
+        <div class="q-num">2</div>
+        <div style="flex:1">
+          <p style="color:var(--text-primary); font-size:14px; margin-bottom:10px">Bagaimana <strong style="color:var(--accent-orange)">hubungan antara hambatan (R) dan arus listrik (I)</strong>, jika tegangan dijaga konstan?</p>
+          <textarea class="hypothesis-input" placeholder="Hipotesismu: Jika hambatan diperbesar, maka arus listrik akan..."></textarea>
+        </div>
+      </div>
+      <div class="problem-q">
+        <div class="q-num">3</div>
+        <div style="flex:1">
+          <p style="color:var(--text-primary); font-size:14px; margin-bottom:10px">Dapatkah kamu merumuskan <strong style="color:var(--accent-green)">hubungan matematis</strong> antara V, I, dan R dalam satu persamaan?</p>
+          <textarea class="hypothesis-input" placeholder="Persamaanku: I = ..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:20px">
+      <h3>📌 Variabel Percobaan</h3>
+      <div class="grid-2" style="margin-top:12px">
+        <div><p style="font-size:13px; color:var(--text-muted);">Variabel Bebas</p><p style="color:var(--accent-blue)">Tegangan (V) dan Hambatan (R)</p></div>
+        <div><p style="font-size:13px; color:var(--text-muted);">Variabel Terikat</p><p style="color:var(--accent-green)">Arus Listrik (I)</p></div>
+        <div><p style="font-size:13px; color:var(--text-muted);">Variabel Kontrol</p><p style="color:var(--accent-orange)">Suhu penghantar, jenis bahan</p></div>
+        <div><p style="font-size:13px; color:var(--text-muted);">Alat Ukur</p><p style="color: #c084fc">Amperemeter, Voltmeter</p></div>
+      </div>
+    </div>
+
+    <div class="page-nav">
+      <button class="btn btn-outline" onclick="goTo(2)">← Kembali</button>
+      <button class="btn btn-primary" onclick="goTo(4)">Mulai Percobaan →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE 6: DATA COLLECTION ══════════════════ -->
+<div class="page" id="pg5">
+  <div class="content-wrap">
+    <div class="step-badge"><div class="step-num">3</div><span>DATA COLLECTION · HAL 6</span></div>
+    <div class="page-title">PERCOBAAN VIRTUAL</div>
+    <p>Atur nilai <strong style="color:var(--accent-blue)">Tegangan</strong> dan <strong style="color:var(--accent-orange)">Hambatan</strong>, lalu amati perubahan <strong style="color:var(--accent-green)">Arus Listrik</strong>.</p>
+
+    <div class="sim-layout">
+      <div>
+        <div class="sim-control">
+          <label>TEGANGAN (V)</label>
+          <div class="sim-display volt" id="vDisplay">6.0 V</div>
+          <input type="range" id="vSlider" min="1" max="12" step="0.5" value="6"
+            oninput="updateSim()" style="margin-top:10px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px"><span>1 V</span><span>12 V</span></div>
+        </div>
+        <div class="sim-control">
+          <label>HAMBATAN (R)</label>
+          <div class="sim-display res" id="rDisplay">10 Ω</div>
+          <input type="range" id="rSlider" min="2" max="20" step="1" value="10"
+            oninput="updateSim()" style="margin-top:10px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px"><span>2 Ω</span><span>20 Ω</span></div>
+        </div>
+        <div class="sim-control">
+          <label>ARUS LISTRIK (I) TERUKUR</label>
+          <div class="sim-display" id="iDisplay">0.60 A</div>
+        </div>
+        <button class="add-btn" onclick="addDataRow()">+ Tambah ke Tabel Data</button>
+      </div>
+
+      <div>
+        <div class="circuit-visual">
+          <canvas id="circuitCanvas" width="280" height="200"></canvas>
+        </div>
+        <div class="panel" style="margin-top:12px; text-align:center">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:8px">DAYA TERPAKAI</p>
+          <div style="font-family:'Orbitron',monospace; font-size:22px; color:#c084fc" id="pDisplay">3.60 W</div>
+          <p style="font-size:11px; color:var(--text-muted); margin-top:4px">P = V × I</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-nav">
+      <button class="btn btn-outline" onclick="goTo(3)">← Kembali</button>
+      <button class="btn btn-primary" onclick="goTo(5)">Lihat Tabel Data →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE 7: DATA PROCESSING ══════════════════ -->
+<div class="page" id="pg6">
+  <div class="content-wrap">
+    <div class="step-badge"><div class="step-num">4</div><span>DATA PROCESSING · HAL 7</span></div>
+    <div class="page-title">TABEL DATA & ANALISIS</div>
+    <p>Data percobaan yang kamu tambahkan dari halaman sebelumnya akan muncul di sini. Analisis pola hubungan V, R, dan I.</p>
+
+    <div class="data-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Tegangan V (Volt)</th>
+            <th>Hambatan R (Ohm)</th>
+            <th>Arus I (Ampere)</th>
+            <th>V/I</th>
+            <th>I×R</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="dataTableBody">
+          <tr><td colspan="7" style="color:var(--text-muted); padding:20px; text-align:center">Belum ada data. Kembali ke halaman Percobaan dan tambahkan data.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:12px; color:var(--text-muted); margin-top:12px; text-align:center">
+      Data percobaan disimpan otomatis di peramban Anda.
+      <button type="button" class="btn btn-outline" style="font-size:12px; padding:6px 14px; margin-left:8px" onclick="clearAllExperimentData()">Kosongkan semua data</button>
+    </p>
+
+    <div class="analysis-box">
+      <h3>🔍 Analisis Pola</h3>
+      <div style="margin-top:12px; display:flex; flex-direction:column; gap:10px" id="analysisText">
+        <p style="font-size:14px; color:var(--text-muted);">Tambahkan data percobaan untuk melihat analisis pola otomatis.</p>
+      </div>
+    </div>
+
+    <div class="page-nav">
+      <button class="btn btn-outline" onclick="goTo(4)">← Kembali</button>
+      <button class="btn btn-primary" onclick="goTo(6)">Verifikasi →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE 8: VERIFICATION ══════════════════ -->
+<div class="page" id="pg7">
+  <div class="content-wrap">
+    <div class="step-badge"><div class="step-num">5</div><span>VERIFICATION · HAL 8</span></div>
+    <div class="page-title">PEMBUKTIAN TEORI</div>
+    <p>Bandingkan hasil percobaan virtualmu dengan bunyi Hukum Ohm yang telah ditetapkan secara ilmiah.</p>
+
+    <div class="formula-display">I = V ÷ R</div>
+
+    <div class="verify-grid">
+      <div class="verify-card observed">
+        <h4>📊 HASIL PERCOBAANMU</h4>
+        <div id="verifyObserved">
+          <p style="font-size:13px; color:var(--text-muted);">Dari data yang kamu kumpulkan:</p>
+          <ul style="margin-top:10px; font-size:14px; color:#8ab8d0; padding-left:18px; line-height:2" id="verifyList">
+            <li>Belum ada data percobaan</li>
+          </ul>
+        </div>
+      </div>
+      <div class="verify-card theory">
+        <h4>📖 TEORI HUKUM OHM</h4>
+        <p style="font-size:13px; line-height:1.8;">"Arus listrik yang mengalir melalui suatu penghantar <strong style="color:var(--accent-blue)">berbanding lurus</strong> dengan beda potensial (tegangan) di kedua ujungnya dan <strong style="color:var(--accent-blue)">berbanding terbalik</strong> dengan hambatannya."</p>
+        <div class="panel" style="margin-top:12px; text-align:center">
+          <p style="font-size:12px; color:var(--text-muted);">Georg Simon Ohm (1827)</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <h3>✅ Checklist Verifikasi</h3>
+      <div style="margin-top:12px; display:flex; flex-direction:column; gap:10px">
+        <label style="display:flex; gap:12px; align-items:center; cursor:pointer">
+          <input type="checkbox" style="width:18px;height:18px;accent-color:var(--accent-blue)">
+          <span style="font-size:14px">Ketika V dinaikkan (R tetap), arus I ikut naik secara proporsional ✓</span>
+        </label>
+        <label style="display:flex; gap:12px; align-items:center; cursor:pointer">
+          <input type="checkbox" style="width:18px;height:18px;accent-color:var(--accent-blue)">
+          <span style="font-size:14px">Ketika R dinaikkan (V tetap), arus I turun ✓</span>
+        </label>
+        <label style="display:flex; gap:12px; align-items:center; cursor:pointer">
+          <input type="checkbox" style="width:18px;height:18px;accent-color:var(--accent-blue)">
+          <span style="font-size:14px">Nilai V/I selalu konstan (= hambatan R) untuk setiap percobaan ✓</span>
+        </label>
+        <label style="display:flex; gap:12px; align-items:center; cursor:pointer">
+          <input type="checkbox" style="width:18px;height:18px;accent-color:var(--accent-blue)">
+          <span style="font-size:14px">Hasil simulasi sesuai dengan rumus I = V/R ✓</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="page-nav">
+      <button class="btn btn-outline" onclick="goTo(5)">← Kembali</button>
+      <button class="btn btn-primary" onclick="goTo(7)">Buat Simpulan →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE 9: GENERALIZATION ══════════════════ -->
+<div class="page" id="pg8">
+  <div class="content-wrap">
+    <div class="step-badge"><div class="step-num">6</div><span>GENERALIZATION · HAL 9</span></div>
+    <div class="page-title">KESIMPULAN</div>
+    <p>Berdasarkan seluruh kegiatan percobaan, verifikasi, dan diskusi, tuliskan kesimpulanmu!</p>
+
+    <div class="conclusion-form">
+      <div class="conclusion-prompt">Dari hasil percobaan virtual, aku menemukan bahwa arus listrik (I) __________ dengan tegangan (V) ketika hambatan dijaga konstan.</div>
+      <div class="conclusion-prompt">Ketika hambatan (R) diperbesar sementara tegangan tetap, maka arus listrik akan __________ karena __________.</div>
+      <div class="conclusion-prompt">Secara matematis, hubungan antara V, I, dan R dapat dinyatakan dengan rumus: __________.</div>
+
+      <textarea class="hypothesis-input" style="min-height:140px; margin-top:16px"
+        placeholder="Tuliskan kesimpulan lengkapmu di sini. Gunakan kata-katamu sendiri untuk menjelaskan Hukum Ohm berdasarkan hasil percobaan virtual yang telah kamu lakukan..."
+        id="conclusionText" oninput="checkConclusion()"></textarea>
+
+      <button class="btn btn-primary" style="margin-top:12px; width:100%" onclick="submitConclusion()">
+        ✓ Simpan Kesimpulan
+      </button>
+    </div>
+
+    <div class="badge-earned" id="badgeEarned">
+      <div class="badge-icon">🏅</div>
+      <h3>DISCOVERY SELESAI!</h3>
+      <p style="font-size:14px; color:#c0a000; margin-top:8px">Selamat! Kamu berhasil menemukan sendiri konsep Hukum Ohm melalui proses Discovery Learning. Sekarang, pelajari materi lengkapnya!</p>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="goTo(8)">Baca Materi Lengkap →</button>
+    </div>
+
+    <div class="page-nav">
+      <button class="btn btn-outline" onclick="goTo(6)">← Kembali</button>
+      <button class="btn btn-primary" onclick="goTo(8)">Materi Pokok →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE 10-15: MATERI POKOK ══════════════════ -->
+<div class="page" id="pg9">
+  <div class="content-wrap">
+    <div class="section-label">Halaman 10–15</div>
+    <div class="page-title">MATERI POKOK</div>
+    <p>Pelajari konsep Hukum Ohm secara lengkap. Klik tab untuk beralih antar topik.</p>
+
+    <div class="materi-tabs" style="margin-top:20px">
+      <button class="mat-tab active" onclick="switchMat(0)">⚡ Arus Listrik</button>
+      <button class="mat-tab" onclick="switchMat(1)">🔋 Tegangan</button>
+      <button class="mat-tab" onclick="switchMat(2)">🌀 Hambatan</button>
+      <button class="mat-tab" onclick="switchMat(3)">📐 Hukum Ohm</button>
+      <button class="mat-tab" onclick="switchMat(4)">📈 Grafik V-I</button>
+      <button class="mat-tab" onclick="switchMat(5)">🌍 Penerapan</button>
+    </div>
+
+    <!-- TAB 0: Arus Listrik -->
+    <div class="mat-content active" id="mat0">
+      <div class="card">
+        <h3>⚡ Arus Listrik (Electric Current)</h3>
+        <div class="info-box">Arus listrik adalah aliran muatan listrik yang melewati suatu penghantar per satuan waktu. Arus terjadi akibat adanya beda potensial (tegangan) di kedua ujung penghantar.</div>
+        <div class="formula-box">
+          <div class="big-formula">I = Q / t</div>
+          <table class="var-table" style="margin-top:12px">
+            <tr><td>I</td><td>= Arus Listrik (Ampere / A)</td></tr>
+            <tr><td>Q</td><td>= Muatan Listrik (Coulomb / C)</td></tr>
+            <tr><td>t</td><td>= Waktu (sekon / s)</td></tr>
+          </table>
+        </div>
+        <p style="font-size:14px; margin-top:16px;">Arah arus listrik konvensional adalah dari potensial tinggi (+) ke potensial rendah (−), berlawanan dengan arah aliran elektron.</p>
+        <div class="grid-2" style="margin-top:16px">
+          <div class="panel"><p style="font-size:12px; color:var(--text-muted)">Satuan SI</p><p style="color:var(--accent-blue); font-family:'Share Tech Mono'">Ampere (A)</p></div>
+          <div class="panel"><p style="font-size:12px; color:var(--text-muted)">Alat Ukur</p><p style="color:var(--accent-blue)">Amperemeter (seri)</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: Tegangan -->
+    <div class="mat-content" id="mat1">
+      <div class="card">
+        <h3>🔋 Tegangan / Beda Potensial (Voltage)</h3>
+        <div class="info-box">Tegangan atau beda potensial adalah energi yang diperlukan untuk memindahkan satu satuan muatan dari satu titik ke titik lain. Tegangan merupakan "pendorong" arus listrik.</div>
+        <div class="formula-box">
+          <div class="big-formula">V = W / Q</div>
+          <table class="var-table" style="margin-top:12px">
+            <tr><td>V</td><td>= Tegangan / Beda Potensial (Volt / V)</td></tr>
+            <tr><td>W</td><td>= Energi / Usaha (Joule / J)</td></tr>
+            <tr><td>Q</td><td>= Muatan Listrik (Coulomb / C)</td></tr>
+          </table>
+        </div>
+        <div class="grid-2" style="margin-top:16px">
+          <div class="panel"><p style="font-size:12px; color:var(--text-muted)">Satuan SI</p><p style="color:var(--accent-blue); font-family:'Share Tech Mono'">Volt (V)</p></div>
+          <div class="panel"><p style="font-size:12px; color:var(--text-muted)">Alat Ukur</p><p style="color:var(--accent-blue)">Voltmeter (paralel)</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Hambatan -->
+    <div class="mat-content" id="mat2">
+      <div class="card">
+        <h3>🌀 Hambatan Listrik (Resistance)</h3>
+        <div class="info-box">Hambatan listrik adalah kemampuan suatu bahan untuk menghambat aliran arus listrik. Hambatan bergantung pada jenis bahan, panjang, luas penampang, dan suhu penghantar.</div>
+        <div class="formula-box">
+          <div class="big-formula">R = ρ × L / A</div>
+          <table class="var-table" style="margin-top:12px">
+            <tr><td>R</td><td>= Hambatan (Ohm / Ω)</td></tr>
+            <tr><td>ρ</td><td>= Hambatan jenis bahan (Ω·m)</td></tr>
+            <tr><td>L</td><td>= Panjang penghantar (m)</td></tr>
+            <tr><td>A</td><td>= Luas penampang (m²)</td></tr>
+          </table>
+        </div>
+        <p style="font-size:14px; margin-top:12px;">Semakin besar hambatan, semakin kecil arus yang mengalir untuk tegangan yang sama.</p>
+        <div class="grid-2" style="margin-top:16px">
+          <div class="panel"><p style="font-size:12px; color:var(--text-muted)">Satuan SI</p><p style="color:var(--accent-orange); font-family:'Share Tech Mono'">Ohm (Ω)</p></div>
+          <div class="panel"><p style="font-size:12px; color:var(--text-muted)">Alat Ukur</p><p style="color:var(--accent-orange)">Ohmmeter / Multimeter</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Hukum Ohm -->
+    <div class="mat-content" id="mat3">
+      <div class="card">
+        <h3>📐 Bunyi Hukum Ohm</h3>
+        <div style="background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.3); border-radius:10px; padding:20px; margin-bottom:16px; font-size:15px; line-height:1.9; color:#d4b800; font-style:italic;">
+          "Kuat arus yang mengalir melalui suatu penghantar berbanding lurus dengan beda potensial di kedua ujungnya dan berbanding terbalik dengan hambatannya, asalkan suhu penghantar dijaga tetap."
+        </div>
+        <div class="formula-box">
+          <div class="big-formula">I = V / R</div>
+          <table class="var-table" style="margin-top:12px">
+            <tr><td>I</td><td>= Arus Listrik (A)</td></tr>
+            <tr><td>V</td><td>= Tegangan (V)</td></tr>
+            <tr><td>R</td><td>= Hambatan (Ω)</td></tr>
+          </table>
+        </div>
+        <div class="grid-2" style="margin-top:16px">
+          <div class="panel" style="text-align:center"><p style="font-size:12px; color:var(--text-muted); margin-bottom:4px">Mencari Tegangan</p><p style="font-family:'Share Tech Mono'; font-size:20px; color:var(--accent-blue)">V = I × R</p></div>
+          <div class="panel" style="text-align:center"><p style="font-size:12px; color:var(--text-muted); margin-bottom:4px">Mencari Hambatan</p><p style="font-family:'Share Tech Mono'; font-size:20px; color:var(--accent-orange)">R = V / I</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Grafik V-I -->
+    <div class="mat-content" id="mat4">
+      <div class="card">
+        <h3>📈 Grafik Hubungan V-I</h3>
+        <p style="font-size:14px; margin-bottom:16px;">Grafik hubungan tegangan–arus untuk penghantar ohmik berupa <strong style="color:var(--accent-blue)">garis lurus melalui titik asal (0,0)</strong>. Pada grafik di bawah, sumbu mendatar adalah V dan sumbu tegak adalah I (I terhadap V), sehingga <strong>kemiringan garis = ΔI/ΔV = 1/R</strong>.</p>
+        <div class="chart-wrap">
+          <canvas id="viChart" height="200"></canvas>
+        </div>
+        <div class="grid-2" style="margin-top:16px">
+          <div class="panel">
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:6px">Grafik I terhadap V (seperti di atas)</p>
+            <p style="font-family:'Share Tech Mono'; color:var(--accent-orange)">ΔI/ΔV = 1/R</p>
+          </div>
+          <div class="panel">
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:6px">Grafik V terhadap I (V sumbu tegak)</p>
+            <p style="font-family:'Share Tech Mono'; color:var(--accent-green)">ΔV/ΔI = R</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: Penerapan -->
+    <div class="mat-content" id="mat5">
+      <div class="card">
+        <h3>🌍 Penerapan dalam Kehidupan Sehari-hari</h3>
+        <div class="example-grid" style="margin-top:16px">
+          <div class="example-card">
+            <div class="icon">💡</div>
+            <h4>Lampu Listrik</h4>
+            <p>Tegangan 220V dan hambatan filamen menentukan arus dan daya lampu (P = V²/R).</p>
+          </div>
+          <div class="example-card">
+            <div class="icon">📱</div>
+            <h4>Pengisian Baterai</h4>
+            <p>Charger mengatur tegangan dan hambatan internal untuk mengontrol arus pengisian.</p>
+          </div>
+          <div class="example-card">
+            <div class="icon">🔊</div>
+            <h4>Speaker</h4>
+            <p>Impedansi speaker (hambatan AC) menentukan besar arus yang mengalir dari amplifier.</p>
+          </div>
+          <div class="example-card">
+            <div class="icon">🌡️</div>
+            <h4>Pemanas Listrik</h4>
+            <p>Elemen pemanas dengan hambatan tinggi menghasilkan panas melalui efek Joule.</p>
+          </div>
+          <div class="example-card">
+            <div class="icon">🚗</div>
+            <h4>Sistem Listrik Mobil</h4>
+            <p>Aki 12V, hambatan kabel, dan beban menentukan arus di setiap bagian rangkaian.</p>
+          </div>
+          <div class="example-card">
+            <div class="icon">🔌</div>
+            <h4>Sekering (Fuse)</h4>
+            <p>Dirancang putus saat arus melebihi batas aman berdasarkan prinsip I = V/R.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-nav">
+      <button class="btn btn-outline" onclick="goTo(7)">← Kembali</button>
+      <button class="btn btn-primary" onclick="goTo(9)">Game Simulasi →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE 16: GAME SIMULASI ══════════════════ -->
+<div class="page" id="pg10">
+  <div class="content-wrap">
+    <div class="section-label">Halaman 16</div>
+    <div class="page-title">GAME SIMULASI</div>
+
+    <div class="game-header">
+      <p>Atur tegangan hingga arus mencapai nilai target!</p>
+      <div class="score-board">
+        <div class="score-item"><div class="val" id="gScore">0</div><div class="lbl">SKOR</div></div>
+        <div class="score-item"><div class="val" id="gLevel">1</div><div class="lbl">LEVEL</div></div>
+        <div class="score-item"><div class="val" id="gLives">❤️❤️❤️</div><div class="lbl">NYAWA</div></div>
+      </div>
+    </div>
+
+    <div class="game-target">
+      <p style="font-size:12px; color:var(--text-muted); letter-spacing:2px; margin-bottom:8px">TARGET ARUS</p>
+      <div class="target-val" id="gTarget">0.50 A</div>
+      <p style="font-size:12px; color:var(--text-muted); margin-top:4px">Hambatan: <strong id="gResistance" style="color:var(--accent-orange)">10 Ω</strong> &nbsp;|&nbsp; Toleransi: ±0.05 A</p>
+    </div>
+
+    <div class="game-circuit">
+      <div style="text-align:center">
+        <p style="font-size:11px; color:var(--text-muted); margin-bottom:6px">TEGANGAN (V)</p>
+        <div class="sim-display volt" id="gVDisplay">5.0 V</div>
+        <input type="range" id="gVSlider" min="1" max="20" step="0.5" value="5" oninput="updateGame()" style="width:200px; margin-top:10px">
+      </div>
+      <div style="text-align:center">
+        <p style="font-size:11px; color:var(--text-muted); margin-bottom:6px">ARUS SAAT INI</p>
+        <div class="sim-display" id="gIDisplay">0.50 A</div>
+      </div>
+    </div>
+
+    <div class="game-feedback" id="gFeedback"></div>
+
+    <div style="display:flex; gap:12px; margin-top:16px;">
+      <button class="btn btn-primary" style="flex:1" onclick="checkGame()">⚡ CEK JAWABAN</button>
+      <button class="btn btn-outline" onclick="newGameChallenge()">↺ Tantangan Baru</button>
+    </div>
+
+    <div class="page-nav">
+      <button class="btn btn-outline" onclick="goTo(8)">← Kembali</button>
+      <button class="btn btn-primary" onclick="goTo(10)">Latihan Soal →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE 17-19: LATIHAN SOAL ══════════════════ -->
+<div class="page" id="pg11">
+  <div class="content-wrap">
+    <div class="section-label">Halaman 17–19</div>
+    <div class="page-title">LATIHAN SOAL</div>
+
+    <div class="quiz-progress" id="quizProgress"></div>
+
+    <div id="quizContainer"></div>
+
+    <div class="quiz-result" id="quizResult">
+      <p style="color:var(--text-muted); margin-bottom:8px; font-size:14px; letter-spacing:2px">SKOR AKHIR</p>
+      <div class="result-score" id="resultScore">0</div>
+      <p style="color:var(--text-muted); margin-top:8px" id="resultLabel">dari 8 soal</p>
+      <div id="resultMsg" style="margin:20px 0; font-size:15px;"></div>
+      <button class="btn btn-primary" onclick="restartQuiz()">↺ Ulangi Latihan</button>
+    </div>
+
+    <div class="page-nav">
+      <button class="btn btn-outline" onclick="goTo(9)">← Kembali</button>
+      <button class="btn btn-primary" onclick="goTo(11)">Daftar Pustaka →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE 20: DAFTAR PUSTAKA ══════════════════ -->
+<div class="page" id="pg12">
+  <div class="content-wrap">
+    <div class="section-label">Halaman 20</div>
+    <div class="page-title">DAFTAR PUSTAKA</div>
+    <p>Sumber referensi yang digunakan dalam pengembangan media pembelajaran interaktif ini.</p>
+
+    <div class="ref-list">
+      <div class="ref-item">
+        <strong>Giancoli, D. C. (2014).</strong> <em>Physics: Principles with Applications</em> (7th ed.). Pearson Education. (Bab 18: Arus Listrik dan Hambatan)
+      </div>
+      <div class="ref-item">
+        <strong>Serway, R. A., & Jewett, J. W. (2018).</strong> <em>Physics for Scientists and Engineers</em> (10th ed.). Cengage Learning.
+      </div>
+      <div class="ref-item">
+        <strong>Marthen Kanginan. (2016).</strong> <em>Fisika untuk SMA/MA Kelas X</em>. Jakarta: Erlangga. (Listrik Dinamis, hlm. 234–268)
+      </div>
+      <div class="ref-item">
+        <strong>Kemendikbud. (2022).</strong> <em>Buku Teks Fisika SMA Kurikulum Merdeka Kelas X</em>. Jakarta: Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi.
+      </div>
+      <div class="ref-item">
+        <strong>Widodo, A., & Sudrajat, A. (2019).</strong> Pengembangan media pembelajaran interaktif berbasis Discovery Learning pada materi listrik dinamis. <em>Jurnal Pendidikan Fisika Indonesia, 15</em>(2), 78–89.
+      </div>
+      <div class="ref-item">
+        <strong>PhET Interactive Simulations. (2024).</strong> <em>Ohm's Law – PhET Simulation</em>. University of Colorado Boulder. Diakses dari https://phet.colorado.edu/en/simulations/ohms-law
+      </div>
+      <div class="ref-item">
+        <strong>Khan Academy. (2023).</strong> <em>Introduction to circuits and Ohm's law</em>. Diakses dari https://www.khanacademy.org/science/ap-physics-1/electric-current
+      </div>
+      <div class="ref-item">
+        <strong>Depdiknas. (2006).</strong> <em>Standar Kompetensi dan Kompetensi Dasar: Mata Pelajaran Fisika untuk SMA/MA</em>. Jakarta: Badan Standar Nasional Pendidikan.
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:24px; text-align:center; padding:32px">
+      <p style="font-size:24px; margin-bottom:12px">🎉</p>
+      <h3 style="margin-bottom:8px">Selamat!</h3>
+      <p style="font-size:14px; color:var(--text-muted)">Kamu telah menyelesaikan seluruh media pembelajaran Hukum Ohm.</p>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="goTo(0)">⟳ Mulai Ulang</button>
+    </div>
+
+    <div class="page-nav">
+      <button class="btn btn-outline" onclick="goTo(10)">← Kembali</button>
+      <span></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ JAVASCRIPT ══════════════════ -->
+<script>
+// ─── PAGE NAVIGATION ───
+const pages = document.querySelectorAll('.page');
+const navTabs = document.querySelectorAll('.nav-tab');
+const pageRanges = [[1],[2,3],[4],[5],[6],[7],[8],[9],[10,11,12,13,14,15],[16],[17,18,19],[20]];
+let currentPage = 0;
+
+function goTo(idx) {
+  pages.forEach(p => p.classList.remove('active'));
+  navTabs.forEach(t => t.classList.remove('active'));
+  pages[idx].classList.add('active');
+  navTabs[idx].classList.add('active');
+  currentPage = idx;
+  const range = pageRanges[idx];
+  document.getElementById('page-indicator').textContent =
+    range.length > 1 ? `HAL ${range[0]}–${range[range.length-1]}/20` : `HAL ${range[0]}/20`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (idx === 5) renderDataTable();
+  if (idx === 6) renderVerify();
+  if (idx === 8) drawVIChart();
+  if (idx === 4) drawCircuit();
+}
+
+// ─── STIMULATION SLIDER ───
+function updateStim(v) {
+  const R = 10, I = (v/R).toFixed(2);
+  document.getElementById('stimVLabel').textContent = v + ' V';
+  document.getElementById('stimI').textContent = I;
+  const bulbA = Math.min(v/12, 1);
+  const el = document.getElementById('sbGlow');
+  const fill = `rgba(255,${200+Math.round(30*bulbA)},0,${0.1 + 0.7*bulbA})`;
+  const stroke = `rgba(255,${200+Math.round(30*bulbA)},0,${0.3 + 0.6*bulbA})`;
+  el.setAttribute('fill', fill); el.setAttribute('stroke', stroke);
+  const pct = ((v-1)/(12-1)*100).toFixed(0);
+  document.getElementById('stimSlider').style.setProperty('--pct', pct+'%');
+}
+
+// ─── SIMULATOR & PENYIMPANAN LOKAL ───
+const LS_EXP = 'ohmLabExpData_v1';
+const LS_CONC = 'ohmLabConclusion_v1';
+const LS_BADGE = 'ohmLabBadge_v1';
+
+let expData = [];
+
+function saveExperimentData() {
+  try { localStorage.setItem(LS_EXP, JSON.stringify(expData)); } catch (e) {}
+}
+
+function loadExperimentData() {
+  try {
+    const raw = localStorage.getItem(LS_EXP);
+    if (!raw) return;
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return;
+    expData = arr.filter(d => d && typeof d.V === 'number' && typeof d.R === 'number' && typeof d.I === 'number' && d.R !== 0);
+  } catch (e) {}
+}
+
+function showSaveToast(msg) {
+  const el = document.getElementById('saveToast');
+  if (!el) return;
+  el.textContent = msg || 'Progress tersimpan';
+  el.classList.add('show');
+  clearTimeout(showSaveToast._t);
+  showSaveToast._t = setTimeout(() => {
+    el.classList.remove('show');
+    el.textContent = 'Progress tersimpan';
+  }, 2000);
+}
+
+function clearAllExperimentData() {
+  if (!confirm('Hapus semua data percobaan dari tabel dan penyimpanan peramban (localStorage)?')) return;
+  expData = [];
+  saveExperimentData();
+  renderDataTable();
+  renderVerify();
+  showSaveToast('Data percobaan dikosongkan');
+}
+
+function updateSim() {
+  const V = parseFloat(document.getElementById('vSlider').value);
+  const R = parseFloat(document.getElementById('rSlider').value);
+  const I = (V/R).toFixed(3);
+  const P = (V*V/R).toFixed(2);
+  document.getElementById('vDisplay').textContent = V.toFixed(1) + ' V';
+  document.getElementById('rDisplay').textContent = R + ' Ω';
+  document.getElementById('iDisplay').textContent = parseFloat(I).toFixed(3) + ' A';
+  document.getElementById('pDisplay').textContent = P + ' W';
+  const pct = ((V-1)/(12-1)*100).toFixed(0);
+  document.getElementById('vSlider').style.setProperty('--pct', pct+'%');
+  const pct2 = ((R-2)/(20-2)*100).toFixed(0);
+  document.getElementById('rSlider').style.setProperty('--pct', pct2+'%');
+  drawCircuit(V, R, parseFloat(I));
+}
+
+function addDataRow() {
+  const V = parseFloat(document.getElementById('vSlider').value);
+  const R = parseFloat(document.getElementById('rSlider').value);
+  const I = parseFloat((V/R).toFixed(3));
+  expData.push({V, R, I});
+  saveExperimentData();
+  showSaveToast();
+  const btn = document.querySelector('.add-btn');
+  btn.textContent = '✓ Data ditambahkan!';
+  btn.style.color = 'var(--accent-green)';
+  setTimeout(() => { btn.textContent = '+ Tambah ke Tabel Data'; btn.style.color = ''; }, 1500);
+}
+
+function removeDataRow(index) {
+  if (index < 0 || index >= expData.length) return;
+  expData.splice(index, 1);
+  saveExperimentData();
+  showSaveToast();
+  renderDataTable();
+  if (currentPage === 6) renderVerify();
+}
+
+function renderDataTable() {
+  const tbody = document.getElementById('dataTableBody');
+  const analysisEl = document.getElementById('analysisText');
+  if (expData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--text-muted); padding:20px; text-align:center">Belum ada data. Kembali ke halaman Percobaan dan tambahkan data.</td></tr>';
+    analysisEl.innerHTML = '<p style="font-size:14px; color:var(--text-muted);">Tambahkan data percobaan untuk melihat analisis pola otomatis.</p>';
+    return;
+  }
+  tbody.innerHTML = expData.map((d, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td style="color:var(--accent-blue)">${d.V.toFixed(1)}</td>
+      <td style="color:var(--accent-orange)">${d.R}</td>
+      <td style="color:var(--accent-green)">${d.I.toFixed(3)}</td>
+      <td style="color:#c084fc">${(d.V/d.I).toFixed(2)}</td>
+      <td style="color:#c084fc">${(d.I*d.R).toFixed(2)}</td>
+      <td><button type="button" class="btn-del" onclick="removeDataRow(${i})" aria-label="Hapus baris ${i+1}">Hapus</button></td>
+    </tr>`).join('');
+
+  let html = '';
+  if (expData.length >= 2) {
+    const vRatios = expData.map(d => (d.V/d.I).toFixed(2));
+    html += `<p style="font-size:14px; color:var(--accent-green)">✓ Nilai V/I untuk setiap baris ≈ <strong>${vRatios.join(', ')}</strong> (nilai hambatan R)</p>`;
+    html += `<p style="font-size:14px; color:#8ab8d0;">✓ Nilai I×R untuk setiap baris ≈ nilai tegangan V yang digunakan</p>`;
+    html += `<p style="font-size:14px; color:var(--accent-blue);">→ <strong>Kesimpulan:</strong> V = I × R, sehingga I = V/R (Hukum Ohm terbukti!)</p>`;
+    const sameR = expData.filter(d => d.R === expData[0].R);
+    if (sameR.length >= 2 && sameR.length === expData.length) {
+      html += `<p style="font-size:13px; color:var(--text-muted);">💡 Semua baris memakai R sama — bandingkan bagaimana I berubah ketika V diubah.</p>`;
+    }
+  }
+  analysisEl.innerHTML = html || '<p style="font-size:14px; color:var(--text-muted);">Tambahkan lebih banyak data untuk analisis yang lebih baik.</p>';
+}
+
+function renderVerify() {
+  const list = document.getElementById('verifyList');
+  if (expData.length === 0) { list.innerHTML = '<li>Belum ada data percobaan</li>'; return; }
+  list.innerHTML = expData.map(d => `<li>V=${d.V}V, R=${d.R}Ω → I=${d.I.toFixed(3)}A (V/I = ${(d.V/d.I).toFixed(2)} ≈ R)</li>`).join('');
+}
+
+// ─── CIRCUIT CANVAS ───
+function drawCircuit(V=6, R=10, I=0.6) {
+  const canvas = document.getElementById('circuitCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const brightness = Math.min(I/1.5, 1);
+  const glowColor = `rgba(255, ${200 + Math.round(55*brightness)}, 0, ${0.3 + 0.6*brightness})`;
+
+  ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 2.5;
+  ctx.shadowColor = '#00d4ff'; ctx.shadowBlur = 6;
+
+  // Outer rectangle circuit
+  ctx.beginPath();
+  ctx.moveTo(30, 30); ctx.lineTo(250, 30);
+  ctx.lineTo(250, 170); ctx.lineTo(30, 170);
+  ctx.lineTo(30, 30); ctx.stroke();
+
+  // Battery (left side center)
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(0,212,255,0.1)';
+  ctx.fillRect(20, 80, 20, 40);
+  ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 1.5;
+  ctx.strokeRect(20, 80, 20, 40);
+  ctx.fillStyle = '#00d4ff'; ctx.font = '10px Share Tech Mono'; ctx.textAlign = 'center';
+  ctx.fillText(V.toFixed(1)+'V', 30, 130);
+  ctx.fillText('BAT', 30, 75);
+
+  // Resistor (top center)
+  ctx.fillStyle = 'rgba(255,140,0,0.1)';
+  ctx.fillRect(100, 18, 60, 24); ctx.strokeStyle = '#ff8c00'; ctx.strokeRect(100, 18, 60, 24);
+  ctx.fillStyle = '#ff8c00'; ctx.font = '10px Share Tech Mono'; ctx.textAlign = 'center';
+  ctx.fillText(R+'Ω', 130, 34);
+
+  // Bulb (right side)
+  ctx.shadowColor = glowColor; ctx.shadowBlur = 20;
+  ctx.beginPath(); ctx.arc(250, 100, 18, 0, Math.PI*2);
+  ctx.fillStyle = `rgba(255, 200, 0, ${0.1 + 0.5*brightness})`;
+  ctx.fill(); ctx.strokeStyle = `rgba(255, 200, 0, ${0.4 + 0.5*brightness})`;
+  ctx.lineWidth = 1.5; ctx.stroke(); ctx.shadowBlur = 0;
+  ctx.fillStyle = `rgba(255, 220, 0, ${0.5 + 0.5*brightness})`; ctx.font = '14px serif';
+  ctx.fillText('✦', 250, 105);
+
+  // Ammeter bottom
+  ctx.shadowColor = '#00ff88'; ctx.shadowBlur = 8;
+  ctx.beginPath(); ctx.arc(130, 170, 14, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(0,255,136,0.1)'; ctx.fill();
+  ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.shadowBlur = 0;
+  ctx.fillStyle = '#00ff88'; ctx.font = 'bold 10px Share Tech Mono';
+  ctx.fillText('A', 130, 174);
+  ctx.fillStyle = '#00ff88'; ctx.font = '9px Share Tech Mono';
+  ctx.fillText(I.toFixed(3)+'A', 130, 196);
+}
+
+// ─── MATERI TABS ───
+function switchMat(idx) {
+  document.querySelectorAll('.mat-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.mat-content').forEach((c,i) => c.classList.toggle('active', i===idx));
+  if (idx === 4) setTimeout(drawVIChart, 50);
+}
+
+function drawVIChart() {
+  const canvas = document.getElementById('viChart');
+  if (!canvas) return;
+  const parent = canvas.parentElement;
+  const pw = parent ? parent.offsetWidth : 300;
+  canvas.width = Math.max(120, pw - 32);
+  canvas.height = 200;
+  const ctx = canvas.getContext('2d'); const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const pad = {l:50,r:20,t:20,b:40};
+  const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+
+  // Grid
+  ctx.strokeStyle = 'rgba(0,212,255,0.08)'; ctx.lineWidth = 1;
+  for (let i=0; i<=5; i++) {
+    const y = pad.t + ch - (i/5)*ch;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+cw, y); ctx.stroke();
+    const x = pad.l + (i/5)*cw;
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, pad.t+ch); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = '#4a6a8a'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t+ch); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t+ch); ctx.lineTo(pad.l+cw, pad.t+ch); ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = '#6a8baa'; ctx.font = '11px Share Tech Mono'; ctx.textAlign = 'center';
+  ctx.fillText('V (Volt)', pad.l + cw/2, h - 4);
+  ctx.save(); ctx.translate(12, pad.t + ch/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('I (Ampere)', 0, 0); ctx.restore();
+
+  // Lines for different R values
+  const lines = [{R:5, color:'#00ff88'},{R:10, color:'#00d4ff'},{R:20, color:'#ff8c00'}];
+  lines.forEach(({R, color}) => {
+    ctx.strokeStyle = color; ctx.lineWidth = 2;
+    ctx.shadowColor = color; ctx.shadowBlur = 4;
+    ctx.beginPath();
+    const maxV = 10, maxI = 2;
+    ctx.moveTo(pad.l, pad.t+ch);
+    ctx.lineTo(pad.l + (maxV/maxV)*cw, pad.t + ch - (maxV/R/maxI)*ch);
+    ctx.stroke(); ctx.shadowBlur = 0;
+    // Label
+    const lx = pad.l + cw*0.85, ly = pad.t + ch - (maxV*0.85/R/maxI)*ch;
+    ctx.fillStyle = color; ctx.font = 'bold 10px Share Tech Mono'; ctx.textAlign = 'left';
+    ctx.fillText('R='+R+'Ω', lx, ly - 6);
+  });
+
+  // Axis values
+  ctx.fillStyle = '#6a8baa'; ctx.font = '10px Share Tech Mono'; ctx.textAlign = 'right';
+  [0.5,1,1.5,2].forEach(v => {
+    const y = pad.t + ch - (v/2)*ch;
+    ctx.fillText(v.toFixed(1), pad.l-4, y+3);
+  });
+  ctx.textAlign = 'center';
+  [2,4,6,8,10].forEach(v => {
+    const x = pad.l + (v/10)*cw;
+    ctx.fillText(v, x, pad.t+ch+14);
+  });
+}
+
+// ─── GENERALIZATION ───
+function checkConclusion() {
+  const ct = document.getElementById('conclusionText');
+  if (!ct) return;
+  try { localStorage.setItem(LS_CONC, ct.value); } catch (e) {}
+}
+
+function submitConclusion() {
+  const text = document.getElementById('conclusionText').value.trim();
+  if (text.length < 20) { alert('Tuliskan kesimpulan lebih lengkap ya!'); return; }
+  try {
+    localStorage.setItem(LS_CONC, document.getElementById('conclusionText').value);
+    localStorage.setItem(LS_BADGE, '1');
+  } catch (e) {}
+  document.getElementById('badgeEarned').classList.add('show');
+  showSaveToast();
+}
+
+// ─── GAME ───
+let gameScore = 0, gameLives = 3, gameLevel = 1;
+let gameTarget = 0, gameR = 10;
+let gameBusy = false;
+
+function newGameChallenge() {
+  gameBusy = false;
+  const Rs = [5,10,15,20,25];
+  gameR = Rs[Math.floor(Math.random()*Rs.length)];
+  const maxV = Math.min(6 + gameLevel*2, 20);
+  const step = 0.5;
+  const maxSteps = Math.max(0, Math.round((maxV - 1) / step));
+  const k = Math.floor(Math.random() * (maxSteps + 1));
+  const Vi = parseFloat((1 + step * k).toFixed(1));
+  gameTarget = parseFloat((Vi / gameR).toFixed(3));
+  document.getElementById('gTarget').textContent = gameTarget.toFixed(2) + ' A';
+  document.getElementById('gResistance').textContent = gameR + ' Ω';
+  document.getElementById('gFeedback').className = 'game-feedback';
+  document.getElementById('gVSlider').value = 5;
+  updateGame();
+}
+
+function updateGame() {
+  const V = parseFloat(document.getElementById('gVSlider').value);
+  const I = parseFloat((V/gameR).toFixed(3));
+  document.getElementById('gVDisplay').textContent = V.toFixed(1) + ' V';
+  document.getElementById('gIDisplay').textContent = I.toFixed(3) + ' A';
+  const pct = ((V-1)/(20-1)*100).toFixed(0);
+  document.getElementById('gVSlider').style.setProperty('--pct', pct+'%');
+}
+
+function checkGame() {
+  if (gameBusy) return;
+  const V = parseFloat(document.getElementById('gVSlider').value);
+  const I = parseFloat((V / gameR).toFixed(3));
+  const diff = Math.abs(I - gameTarget);
+  const fb = document.getElementById('gFeedback');
+  if (diff <= 0.05) {
+    gameBusy = true;
+    gameScore += 10 * gameLevel;
+    fb.textContent = '✓ BENAR! +'+(10*gameLevel)+' poin — I = '+I.toFixed(3)+' A ≈ Target '+gameTarget+' A';
+    fb.className = 'game-feedback correct';
+    gameLevel++;
+    document.getElementById('gScore').textContent = gameScore;
+    document.getElementById('gLevel').textContent = gameLevel;
+    setTimeout(() => { newGameChallenge(); }, 1500);
+  } else {
+    gameLives--;
+    const hearts = '❤️'.repeat(Math.max(0,gameLives)) + '🖤'.repeat(Math.max(0,3-gameLives));
+    document.getElementById('gLives').textContent = hearts;
+    fb.textContent = '✗ Belum tepat. I = '+I.toFixed(3)+' A, selisih '+diff.toFixed(3)+' A dari target. Coba lagi!';
+    fb.className = 'game-feedback wrong';
+    if (gameLives <= 0) {
+      setTimeout(() => { alert('Game Over! Skor: '+gameScore+'. Coba lagi!'); gameScore=0; gameLives=3; gameLevel=1; document.getElementById('gScore').textContent=0; document.getElementById('gLevel').textContent=1; document.getElementById('gLives').textContent='❤️❤️❤️'; newGameChallenge(); }, 300);
+    }
+  }
+}
+
+// ─── QUIZ ───
+const questions = [
+  { type:'mc', q:'Sebuah resistor dihubungkan ke baterai 9 V. Jika hambatan 18 Ω, berapakah arus yang mengalir?', opts:['0.3 A','0.5 A','2 A','18 A'], ans:1, exp:'I = V/R = 9/18 = 0.5 A. Jawaban yang benar adalah 0.5 A (pilihan B).' },
+  { type:'mc', q:'Pernyataan yang benar tentang Hukum Ohm adalah...', opts:['I berbanding terbalik dengan V','I berbanding lurus dengan V jika R konstan','R berubah jika V berubah','V tidak mempengaruhi I'], ans:1, exp:'Hukum Ohm menyatakan I ∝ V (jika R konstan), sehingga I berbanding lurus dengan V.' },
+  { type:'mc', q:'Satuan hambatan listrik adalah...', opts:['Ampere (A)','Volt (V)','Ohm (Ω)','Watt (W)'], ans:2, exp:'Satuan hambatan listrik adalah Ohm (Ω), berasal dari nama Georg Simon Ohm.' },
+  { type:'mc', q:'Jika tegangan dinaikkan 2× sementara hambatan tetap, maka arus akan...', opts:['Tetap sama','Menjadi ½×','Menjadi 2×','Menjadi 4×'], ans:2, exp:'I = V/R. Jika V×2 dan R tetap, maka I juga ×2 (proporsional).' },
+  { type:'mc', q:'Grafik V-I untuk penghantar ohmic berbentuk...', opts:['Kurva parabola','Garis lurus melalui titik asal','Kurva eksponensial','Garis horizontal'], ans:1, exp:'Untuk penghantar ohmik, hubungan V dan I linear melalui titik (0,0). (Kemiringan grafik bergantung pada sumbu yang dipakai; yang penting bentuknya garis lurus melalui asal.)' },
+  { type:'calc', q:'Sebuah lampu memiliki hambatan 440 Ω saat menyala. Jika dihubungkan ke PLN 220 V, berapakah arus listriknya?', unit:'A', ansVal:0.5, exp:'I = V/R = 220/440 = 0.5 A' },
+  { type:'calc', q:'Arus 2 A mengalir melalui hambatan 15 Ω. Berapakah tegangan di kedua ujung hambatan tersebut?', unit:'V', ansVal:30, exp:'V = I × R = 2 × 15 = 30 V' },
+  { type:'calc', q:'Beda potensial 12 V menghasilkan arus 0.4 A. Berapakah nilai hambatan penghantar tersebut?', unit:'Ω', ansVal:30, exp:'R = V/I = 12/0.4 = 30 Ω' }
+];
+
+let quizState = { current: 0, score: 0, answered: Array(questions.length).fill(false) };
+
+function renderQuiz() {
+  const progress = document.getElementById('quizProgress');
+  progress.innerHTML = questions.map((_, i) =>
+    `<div class="quiz-dot ${i < quizState.current ? 'done' : i === quizState.current ? 'current' : ''}"></div>`).join('');
+
+  const q = questions[quizState.current];
+  const container = document.getElementById('quizContainer');
+
+  if (q.type === 'mc') {
+    container.innerHTML = `
+      <div class="question-card">
+        <div class="section-label">SOAL ${quizState.current+1} / ${questions.length} · PILIHAN GANDA</div>
+        <div class="question-text">${q.q}</div>
+        <div class="options" id="opts">
+          ${q.opts.map((o,i) => `
+            <div class="option" id="opt${i}" onclick="selectMC(${i})">
+              <div class="option-key">${'ABCD'[i]}</div>
+              <span>${o}</span>
+            </div>`).join('')}
+        </div>
+        <div class="explanation" id="exp">${q.exp}</div>
+        <div style="margin-top:16px; display:flex; gap:10px">
+          <button class="btn btn-primary" onclick="checkMC()" id="checkBtn">Cek Jawaban</button>
+          ${quizState.current < questions.length-1 ? `<button class="btn btn-outline" id="nextBtn" style="display:none" onclick="nextQ()">Soal Berikutnya →</button>` : `<button class="btn btn-outline" id="nextBtn" style="display:none" onclick="finishQuiz()">Lihat Hasil →</button>`}
+        </div>
+      </div>`;
+  } else {
+    container.innerHTML = `
+      <div class="question-card">
+        <div class="section-label">SOAL ${quizState.current+1} / ${questions.length} · HITUNG</div>
+        <div class="question-text">${q.q}</div>
+        <div style="display:flex; gap:12px; align-items:center; margin-top:12px">
+          <input type="number" class="calc-input" id="calcAns" placeholder="Jawaban..." step="0.01">
+          <span style="font-family:'Share Tech Mono'; color:var(--accent-blue); font-size:18px">${q.unit}</span>
+        </div>
+        <div class="explanation" id="exp">${q.exp}</div>
+        <div style="margin-top:16px; display:flex; gap:10px">
+          <button class="btn btn-primary" onclick="checkCalc()">Cek Jawaban</button>
+          ${quizState.current < questions.length-1 ? `<button class="btn btn-outline" id="nextBtn" style="display:none" onclick="nextQ()">Soal Berikutnya →</button>` : `<button class="btn btn-outline" id="nextBtn" style="display:none" onclick="finishQuiz()">Lihat Hasil →</button>`}
+        </div>
+      </div>`;
+  }
+}
+
+let selectedMC = -1;
+function selectMC(i) {
+  if (quizState.answered[quizState.current]) return;
+  selectedMC = i;
+  document.querySelectorAll('.option').forEach((o,j) => o.classList.toggle('selected', j===i));
+}
+
+function checkMC() {
+  if (selectedMC < 0) { alert('Pilih salah satu jawaban!'); return; }
+  if (quizState.answered[quizState.current]) return;
+  quizState.answered[quizState.current] = true;
+  const q = questions[quizState.current];
+  const opts = document.querySelectorAll('.option');
+  opts[q.ans].classList.add('correct');
+  if (selectedMC !== q.ans) { opts[selectedMC].classList.add('wrong'); }
+  else { quizState.score++; }
+  document.getElementById('exp').classList.add('show');
+  document.getElementById('checkBtn').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'inline-block';
+}
+
+function checkCalc() {
+  const val = parseFloat(document.getElementById('calcAns').value);
+  if (isNaN(val)) { alert('Masukkan angka!'); return; }
+  if (quizState.answered[quizState.current]) return;
+  quizState.answered[quizState.current] = true;
+  const q = questions[quizState.current];
+  const correct = Math.abs(val - q.ansVal) < 0.01;
+  const inp = document.getElementById('calcAns');
+  inp.style.borderColor = correct ? 'var(--accent-green)' : 'var(--accent-red)';
+  inp.style.color = correct ? 'var(--accent-green)' : 'var(--accent-red)';
+  if (correct) quizState.score++;
+  document.getElementById('exp').classList.add('show');
+  document.getElementById('nextBtn').style.display = 'inline-block';
+}
+
+function nextQ() {
+  quizState.current++;
+  selectedMC = -1;
+  renderQuiz();
+}
+
+function finishQuiz() {
+  document.getElementById('quizContainer').style.display = 'none';
+  document.getElementById('quizProgress').style.display = 'none';
+  const s = quizState.score, t = questions.length;
+  document.getElementById('resultScore').textContent = s + '/' + t;
+  document.getElementById('resultLabel').textContent = 'dari ' + t + ' soal';
+  const pct = (s/t)*100;
+  let msg = '';
+  if (pct >= 87.5) msg = '<span style="color:var(--accent-green)">🌟 Luar Biasa! Kamu menguasai Hukum Ohm dengan sangat baik!</span>';
+  else if (pct >= 62.5) msg = '<span style="color:var(--accent-blue)">👍 Bagus! Pelajari kembali soal yang salah untuk memperkuat pemahamanmu.</span>';
+  else msg = '<span style="color:var(--accent-orange)">📖 Ayo belajar lagi! Ulangi materi dan coba kembali latihan ini.</span>';
+  document.getElementById('resultMsg').innerHTML = msg;
+  document.getElementById('quizResult').classList.add('show');
+}
+
+function restartQuiz() {
+  quizState = { current: 0, score: 0, answered: Array(questions.length).fill(false) };
+  selectedMC = -1;
+  document.getElementById('quizContainer').style.display = 'block';
+  document.getElementById('quizProgress').style.display = 'flex';
+  document.getElementById('quizResult').classList.remove('show');
+  renderQuiz();
+}
+
+// ─── INIT ───
+let chartResizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(chartResizeTimer);
+  chartResizeTimer = setTimeout(() => {
+    const mat4 = document.getElementById('mat4');
+    if (currentPage === 8 && mat4 && mat4.classList.contains('active')) drawVIChart();
+  }, 150);
+});
+
+window.addEventListener('load', () => {
+  loadExperimentData();
+  const ct = document.getElementById('conclusionText');
+  if (ct) {
+    try {
+      const saved = localStorage.getItem(LS_CONC);
+      if (saved) ct.value = saved;
+    } catch (e) {}
+  }
+  try {
+    if (localStorage.getItem(LS_BADGE) === '1') {
+      const b = document.getElementById('badgeEarned');
+      if (b) b.classList.add('show');
+    }
+  } catch (e) {}
+
+  updateSim();
+  updateStim(6);
+  newGameChallenge();
+  renderQuiz();
+  // Fix range slider background
+  document.querySelectorAll('input[type=range]').forEach(s => {
+    s.addEventListener('input', function() {
+      const min = this.min||0, max = this.max||100, val = this.value;
+      const pct = ((val-min)/(max-min)*100).toFixed(0);
+      this.style.setProperty('--pct', pct+'%');
+    });
+    const min = s.min||0, max = s.max||100, val = s.value;
+    const pct = ((val-min)/(max-min)*100).toFixed(0);
+    s.style.setProperty('--pct', pct+'%');
+  });
+});
+</script>
+</body>
+</html>
